@@ -35,14 +35,30 @@ body {
 .nav-logo {
     display: flex;
     align-items: center;
+    gap: 1rem;
     color: white;
-    font-size: 1.5rem;
-    font-weight: 700;
 }
 
 .nav-logo i {
-    margin-left: 0.5rem;
-    font-size: 2rem;
+    font-size: 2.5rem;
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.company-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.system-name {
+    font-size: 0.85rem;
+    font-weight: 400;
+    opacity: 0.9;
 }
 
 .nav-menu {
@@ -1110,6 +1126,64 @@ input:focus, select:focus, textarea:focus {
 
 .modal-content form {
     max-height: none;
+}
+
+/* Electronic Signature Styles */
+.signature-container {
+    padding: 1rem;
+}
+
+.signature-canvas {
+    width: 100%;
+    height: 250px;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    background: white;
+    cursor: crosshair;
+    display: block;
+    margin: 1rem 0;
+    touch-action: none;
+}
+
+.signature-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+#signature-instruction {
+    font-size: 1rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.signature-preview {
+    max-width: 200px;
+    max-height: 80px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0.25rem;
+    background: white;
+}
+
+/* Signature Box in Agreement */
+.signature-box.signed {
+    background: white;
+    border: 2px solid #28a745;
+}
+
+.signature-box.signed img {
+    max-height: 90px;
+    max-width: 100%;
+}
+
+/* Header Actions */
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 /* Scrollbar Styling */

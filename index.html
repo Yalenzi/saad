@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة عقود القمة والتطوير للمقاولات العامة</title>
+    <title>مؤسسة القمة والتطوير للمقاولات العامة - نظام إدارة العقود</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -13,8 +13,11 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <i class="fas fa-file-contract"></i>
-                <span>نظام إدارة العقود</span>
+                <i class="fas fa-building"></i>
+                <div class="logo-text">
+                    <span class="company-name">مؤسسة القمة والتطوير للمقاولات العامة</span>
+                    <span class="system-name">نظام إدارة العقود والاتفاقيات</span>
+                </div>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item">
@@ -251,6 +254,18 @@
                 </button>
                 <h1 id="agreement-details-title">تفاصيل الاتفاقية</h1>
                 <div class="header-actions">
+                    <button class="btn btn-success" onclick="signAgreementAsCompany()">
+                        <i class="fas fa-signature"></i>
+                        توقيع الشركة
+                    </button>
+                    <button class="btn btn-primary" onclick="signAgreementAsClient()">
+                        <i class="fas fa-user-edit"></i>
+                        توقيع العميل
+                    </button>
+                    <button class="btn btn-info" onclick="sendAgreementByEmail()">
+                        <i class="fas fa-envelope"></i>
+                        إرسال للعميل
+                    </button>
                     <button class="btn btn-info" onclick="printAgreement()">
                         <i class="fas fa-print"></i>
                         طباعة
@@ -630,7 +645,7 @@
                     </div>
                     <div class="form-group">
                         <label>المدينة</label>
-                        <input type="text" id="client-city" placeholder="عرعر">
+                        <input type="text" id="client-city" placeholder="الرياض">
                     </div>
                 </div>
                 <div class="form-group">
@@ -784,6 +799,31 @@
                     <button type="submit" class="btn btn-primary">حفظ الاتفاقية</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Electronic Signature Modal -->
+    <div id="signature-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="signature-modal-title">التوقيع الإلكتروني</h2>
+                <span class="close" onclick="closeModal('signature-modal')">&times;</span>
+            </div>
+            <div class="signature-container">
+                <p id="signature-instruction">يرجى التوقيع في المربع أدناه:</p>
+                <canvas id="signature-canvas" class="signature-canvas"></canvas>
+                <div class="signature-actions">
+                    <button type="button" class="btn btn-secondary" onclick="clearSignature()">
+                        <i class="fas fa-eraser"></i> مسح
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="closeModal('signature-modal')">
+                        <i class="fas fa-times"></i> إلغاء
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="saveSignature()">
+                        <i class="fas fa-check"></i> حفظ التوقيع
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 

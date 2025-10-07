@@ -20,6 +20,12 @@ let selectedTextElement = null;
 let isDragging = false;
 let dragOffset = { x: 0, y: 0 };
 
+// Signature variables
+let signatureCanvas, signatureCtx;
+let isSignatureDrawing = false;
+let signatureType = ''; // 'company' or 'client'
+let currentSigningAgreementId = null;
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
@@ -30,6 +36,8 @@ document.addEventListener('DOMContentLoaded', function() {
     loadClients();
     loadAgreements();
     setupImageEditor();
+    setupSignatureCanvas();
+    checkAgreementFromURL();
 });
 
 // Initialize application
@@ -192,6 +200,11 @@ function showAddContractForm() {
     document.getElementById('contract-modal-title').textContent = 'إضافة عقد جديد';
     document.getElementById('contract-form').reset();
     loadTemplateOptions();
+    
+    // Generate automatic contract number
+    const contractNumber = generateContractNumber();
+    document.getElementById('contract-number').value = contractNumber;
+    
     showModal('contract-modal');
 }
 
@@ -1794,6 +1807,9 @@ function createAgreementRow(agreement) {
                 <button class="btn btn-info btn-sm" onclick="viewAgreement('${agreement.id}')">
                     <i class="fas fa-eye"></i> عرض
                 </button>
+                <button class="btn btn-primary btn-sm" onclick="sendAgreementEmailFromList('${agreement.id}')">
+                    <i class="fas fa-envelope"></i> إرسال
+                </button>
                 <button class="btn btn-warning btn-sm" onclick="editAgreement('${agreement.id}')">
                     <i class="fas fa-edit"></i> تعديل
                 </button>
@@ -1815,8 +1831,8 @@ function showAddAgreementForm() {
     document.getElementById('agreement-modal-title').textContent = 'إضافة اتفاقية جديدة';
     document.getElementById('agreement-form').reset();
     
-    // Generate agreement number
-    const agreementNumber = `AGR-${new Date().getFullYear()}-${String(agreements.length + 1).padStart(3, '0')}`;
+    // Generate agreement number automatically
+    const agreementNumber = generateAgreementNumber();
     document.getElementById('agreement-number').value = agreementNumber;
     
     // Set default dates
@@ -2068,10 +2084,10 @@ function displayAgreementDetails() {
         <div class="agreement-signatures">
             <div class="signature-block">
                 <div class="signature-title">توقيع الطرف الأول</div>
-                <div class="signature-box">
+                <div class="signature-box ${currentAgreement.companySignature ? 'signed' : ''}">
                     ${currentAgreement.companySignature ? 
                         `<img src="${currentAgreement.companySignature}" alt="توقيع الشركة">` : 
-                        '<span style="color: #999;">توقيع مؤسسة القمة والتطوير للمقاولات العامة</span>'
+                        '<span style="color: #999;">انقر على "توقيع الشركة" لإضافة التوقيع</span>'
                     }
                 </div>
                 <div class="signature-info">
@@ -2082,10 +2098,10 @@ function displayAgreementDetails() {
             
             <div class="signature-block">
                 <div class="signature-title">توقيع الطرف الثاني</div>
-                <div class="signature-box">
+                <div class="signature-box ${currentAgreement.clientSignature ? 'signed' : ''}">
                     ${currentAgreement.clientSignature ? 
                         `<img src="${currentAgreement.clientSignature}" alt="توقيع العميل">` : 
-                        '<span style="color: #999;">توقيع العميل</span>'
+                        '<span style="color: #999;">انقر على "توقيع العميل" لإضافة التوقيع</span>'
                     }
                 </div>
                 <div class="signature-info">
@@ -2339,7 +2355,10 @@ function printAgreement(agreementId) {
                 <div class="signature-block">
                     <div class="signature-title">توقيع الطرف الأول</div>
                     <div class="signature-box">
-                        <span>مؤسسة القمة والتطوير للمقاولات العامة</span>
+                        ${agreement.companySignature ? 
+                            `<img src="${agreement.companySignature}" alt="توقيع الشركة" style="max-height: 80px; max-width: 100%;">` : 
+                            '<span>مؤسسة القمة والتطوير للمقاولات العامة</span>'
+                        }
                     </div>
                     <div class="signature-info">
                         مؤسسة القمة والتطوير للمقاولات العامة<br>
@@ -2350,7 +2369,10 @@ function printAgreement(agreementId) {
                 <div class="signature-block">
                     <div class="signature-title">توقيع الطرف الثاني</div>
                     <div class="signature-box">
-                        <span>${clientName}</span>
+                        ${agreement.clientSignature ? 
+                            `<img src="${agreement.clientSignature}" alt="توقيع العميل" style="max-height: 80px; max-width: 100%;">` : 
+                            `<span>${clientName}</span>`
+                        }
                     </div>
                     <div class="signature-info">
                         ${clientName}<br>
@@ -2393,4 +2415,306 @@ function searchAgreements() {
 
 function saveAgreements() {
     localStorage.setItem('agreements', JSON.stringify(agreements));
+}
+
+// Auto-generate Contract Number
+function generateContractNumber() {
+    // Find the highest contract number
+    let maxNumber = 0;
+    
+    contracts.forEach(contract => {
+        const match = contract.number.match(/SA(\d+)/);
+        if (match) {
+            const num = parseInt(match[1]);
+            if (num > maxNumber) {
+                maxNumber = num;
+            }
+        }
+    });
+    
+    // Generate next number
+    const nextNumber = maxNumber + 1;
+    return `SA${String(nextNumber).padStart(4, '0')}`;
+}
+
+// Auto-generate Agreement Number
+function generateAgreementNumber() {
+    // Find the highest agreement number
+    let maxNumber = 0;
+    
+    agreements.forEach(agreement => {
+        const match = agreement.number.match(/SA(\d+)/);
+        if (match) {
+            const num = parseInt(match[1]);
+            if (num > maxNumber) {
+                maxNumber = num;
+            }
+        }
+    });
+    
+    // Generate next number
+    const nextNumber = maxNumber + 1;
+    return `SA${String(nextNumber).padStart(4, '0')}`;
+}
+
+// Electronic Signature Functions
+function setupSignatureCanvas() {
+    signatureCanvas = document.getElementById('signature-canvas');
+    if (!signatureCanvas) return;
+    
+    signatureCtx = signatureCanvas.getContext('2d');
+    
+    // Set canvas size
+    const container = signatureCanvas.parentElement;
+    signatureCanvas.width = container.clientWidth - 40;
+    signatureCanvas.height = 250;
+    
+    // Setup drawing events
+    signatureCanvas.addEventListener('mousedown', startSignature);
+    signatureCanvas.addEventListener('mousemove', drawSignature);
+    signatureCanvas.addEventListener('mouseup', endSignature);
+    signatureCanvas.addEventListener('mouseleave', endSignature);
+    
+    // Touch events for mobile
+    signatureCanvas.addEventListener('touchstart', handleTouchStart);
+    signatureCanvas.addEventListener('touchmove', handleTouchMove);
+    signatureCanvas.addEventListener('touchend', endSignature);
+    
+    // Initialize signature context
+    signatureCtx.strokeStyle = '#000';
+    signatureCtx.lineWidth = 2;
+    signatureCtx.lineCap = 'round';
+    signatureCtx.lineJoin = 'round';
+}
+
+function startSignature(e) {
+    isSignatureDrawing = true;
+    const rect = signatureCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    signatureCtx.beginPath();
+    signatureCtx.moveTo(x, y);
+    e.preventDefault();
+}
+
+function drawSignature(e) {
+    if (!isSignatureDrawing) return;
+    
+    const rect = signatureCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    signatureCtx.lineTo(x, y);
+    signatureCtx.stroke();
+    e.preventDefault();
+}
+
+function endSignature(e) {
+    isSignatureDrawing = false;
+    e.preventDefault();
+}
+
+function handleTouchStart(e) {
+    const touch = e.touches[0];
+    const mouseEvent = new MouseEvent('mousedown', {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+    });
+    signatureCanvas.dispatchEvent(mouseEvent);
+    e.preventDefault();
+}
+
+function handleTouchMove(e) {
+    const touch = e.touches[0];
+    const mouseEvent = new MouseEvent('mousemove', {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+    });
+    signatureCanvas.dispatchEvent(mouseEvent);
+    e.preventDefault();
+}
+
+function clearSignature() {
+    signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+}
+
+function signAgreementAsCompany() {
+    if (!currentAgreement) return;
+    
+    signatureType = 'company';
+    currentSigningAgreementId = currentAgreement.id;
+    
+    document.getElementById('signature-modal-title').textContent = 'توقيع مؤسسة القمة والتطوير';
+    document.getElementById('signature-instruction').textContent = 'يرجى التوقيع باسم مؤسسة القمة والتطوير للمقاولات العامة:';
+    
+    clearSignature();
+    showModal('signature-modal');
+}
+
+function signAgreementAsClient() {
+    if (!currentAgreement) return;
+    
+    const client = clients.find(c => c.id === currentAgreement.clientId);
+    if (!client) {
+        showErrorMessage('لم يتم العثور على بيانات العميل');
+        return;
+    }
+    
+    signatureType = 'client';
+    currentSigningAgreementId = currentAgreement.id;
+    
+    document.getElementById('signature-modal-title').textContent = 'توقيع العميل';
+    document.getElementById('signature-instruction').textContent = `يرجى التوقيع باسم العميل: ${client.name}`;
+    
+    clearSignature();
+    showModal('signature-modal');
+}
+
+function saveSignature() {
+    // Check if canvas is empty
+    const imageData = signatureCtx.getImageData(0, 0, signatureCanvas.width, signatureCanvas.height);
+    const pixels = imageData.data;
+    let isEmpty = true;
+    
+    for (let i = 0; i < pixels.length; i += 4) {
+        if (pixels[i + 3] !== 0) {
+            isEmpty = false;
+            break;
+        }
+    }
+    
+    if (isEmpty) {
+        showErrorMessage('يرجى التوقيع أولاً');
+        return;
+    }
+    
+    // Convert canvas to data URL
+    const signatureDataURL = signatureCanvas.toDataURL('image/png');
+    
+    // Find the agreement
+    const agreementIndex = agreements.findIndex(a => a.id === currentSigningAgreementId);
+    if (agreementIndex === -1) return;
+    
+    // Save signature based on type
+    if (signatureType === 'company') {
+        agreements[agreementIndex].companySignature = signatureDataURL;
+        showSuccessMessage('تم حفظ توقيع الشركة بنجاح');
+    } else if (signatureType === 'client') {
+        agreements[agreementIndex].clientSignature = signatureDataURL;
+        showSuccessMessage('تم حفظ توقيع العميل بنجاح');
+    }
+    
+    // Save to localStorage
+    saveAgreements();
+    
+    // Refresh the agreement display
+    currentAgreement = agreements[agreementIndex];
+    displayAgreementDetails();
+    
+    // Close modal
+    closeModal('signature-modal');
+    clearSignature();
+}
+
+// Send Agreement by Email
+function sendAgreementByEmail() {
+    if (!currentAgreement) return;
+    
+    const client = clients.find(c => c.id === currentAgreement.clientId);
+    if (!client) {
+        showErrorMessage('لم يتم العثور على بيانات العميل');
+        return;
+    }
+    
+    if (!client.email) {
+        showErrorMessage('لا يوجد بريد إلكتروني مسجل للعميل');
+        return;
+    }
+    
+    // Generate agreement URL (for email content)
+    const agreementLink = window.location.href;
+    
+    // Create email content
+    const emailSubject = encodeURIComponent(`اتفاقية عمل - ${currentAgreement.number} - مؤسسة القمة والتطوير للمقاولات العامة`);
+    
+    const emailBody = encodeURIComponent(`
+السيد/ة ${client.name} المحترم/ة،
+
+تحية طيبة وبعد،
+
+يسرنا في مؤسسة القمة والتطوير للمقاولات العامة أن نرسل لكم اتفاقية العمل رقم: ${currentAgreement.number}
+
+تفاصيل الاتفاقية:
+- رقم الاتفاقية: ${currentAgreement.number}
+- نوع العمل: ${currentAgreement.type}
+- تاريخ البداية: ${formatDate(currentAgreement.startDate)}
+- تاريخ النهاية: ${formatDate(currentAgreement.endDate)}
+
+يرجى مراجعة الاتفاقية والتوقيع عليها إلكترونياً.
+
+للتوقيع على الاتفاقية، يرجى:
+1. فتح رابط الاتفاقية
+2. الضغط على زر "توقيع العميل"
+3. التوقيع في المربع المخصص
+4. حفظ التوقيع
+
+نشكر لكم تعاونكم ونتطلع للعمل معكم.
+
+مع أطيب التحيات،
+مؤسسة القمة والتطوير للمقاولات العامة
+    `);
+    
+    // Create mailto link
+    const mailtoLink = `mailto:${client.email}?subject=${emailSubject}&body=${emailBody}`;
+    
+    // Open email client
+    window.location.href = mailtoLink;
+    
+    showSuccessMessage(`تم فتح برنامج البريد الإلكتروني لإرسال الاتفاقية إلى: ${client.email}`);
+}
+
+// Generate shareable link for agreement
+function generateAgreementLink(agreementId) {
+    const baseUrl = window.location.origin + window.location.pathname;
+    return `${baseUrl}?agreement=${agreementId}`;
+}
+
+// Check if URL contains agreement ID and load it
+function checkAgreementFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const agreementId = urlParams.get('agreement');
+    
+    if (agreementId) {
+        const agreement = agreements.find(a => a.id === agreementId);
+        if (agreement) {
+            viewAgreement(agreementId);
+        }
+    }
+}
+
+// Send agreement email from list
+function sendAgreementEmailFromList(agreementId) {
+    const agreement = agreements.find(a => a.id === agreementId);
+    if (!agreement) return;
+    
+    const client = clients.find(c => c.id === agreement.clientId);
+    if (!client) {
+        showErrorMessage('لم يتم العثور على بيانات العميل');
+        return;
+    }
+    
+    if (!client.email) {
+        showErrorMessage('لا يوجد بريد إلكتروني مسجل للعميل');
+        return;
+    }
+    
+    // Set current agreement temporarily for email
+    const tempAgreement = currentAgreement;
+    currentAgreement = agreement;
+    
+    sendAgreementByEmail();
+    
+    // Restore previous agreement
+    currentAgreement = tempAgreement;
 }
