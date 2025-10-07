@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة عقود المقاوالت</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-file-contract"></i>
+                <span>نظام إدارة العقود</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="showPage('contracts')">
+                        <i class="fas fa-file-contract"></i>
+                        إدارة العقود
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="showPage('templates')">
+                        <i class="fas fa-file-alt"></i>
+                        إدارة النماذج
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="showPage('clients')">
+                        <i class="fas fa-users"></i>
+                        إدارة العملاء
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="showPage('agreements')">
+                        <i class="fas fa-handshake"></i>
+                        اتفاقيات العمل
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="showPage('image-editor')">
+                        <i class="fas fa-image"></i>
+                        محرر الصور
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="showPage('image-templates')">
+                        <i class="fas fa-layer-group"></i>
+                        إدارة القوالب
+                    </a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Contracts Page -->
+        <div id="contracts-page" class="page active">
+            <div class="page-header">
+                <h1><i class="fas fa-file-contract"></i> إدارة العقود</h1>
+                <button class="btn btn-primary" onclick="showAddContractForm()">
+                    <i class="fas fa-plus"></i>
+                    إضافة عقد جديد
+                </button>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid" id="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-contracts">0</div>
+                    <div class="stat-label">إجمالي العقود</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="active-contracts">0</div>
+                    <div class="stat-label">العقود النشطة</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-value">0</div>
+                    <div class="stat-label">القيمة الإجمالية</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="completed-contracts">0</div>
+                    <div class="stat-label">العقود المكتملة</div>
+                </div>
+            </div>
+
+            <!-- Contracts Table -->
+            <div class="table-container">
+                <input type="text" class="table-search" id="contracts-search" placeholder="البحث في العقود..." onkeyup="searchContracts()">
+                <table class="contracts-table" id="contracts-table">
+                    <thead>
+                        <tr>
+                            <th>رقم العقد</th>
+                            <th>اسم العميل</th>
+                            <th>نوع العقد</th>
+                            <th>تاريخ البداية</th>
+                            <th>تاريخ النهاية</th>
+                            <th>القيمة الإجمالية</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contracts-tbody">
+                        <!-- Contracts will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Contract Details Page -->
+        <div id="contract-details-page" class="page">
+            <div class="page-header">
+                <button class="btn btn-secondary" onclick="showPage('contracts')">
+                    <i class="fas fa-arrow-right"></i>
+                    العودة للعقود
+                </button>
+                <h1 id="contract-details-title">تفاصيل العقد</h1>
+                <button class="btn btn-primary" onclick="showAddItemForm()">
+                    <i class="fas fa-plus"></i>
+                    إضافة بند جديد
+                </button>
+            </div>
+
+            <!-- Contract Info -->
+            <div class="contract-info" id="contract-info">
+                <!-- Contract details will be loaded here -->
+            </div>
+
+            <!-- Contract Items -->
+            <div class="contract-items">
+                <h3><i class="fas fa-list"></i> بنود العقد</h3>
+                <div class="table-container">
+                    <table class="items-table" id="items-table">
+                        <thead>
+                            <tr>
+                                <th>الوصف</th>
+                                <th>الكمية</th>
+                                <th>الوحدة</th>
+                                <th>السعر</th>
+                                <th>المجموع</th>
+                                <th>ملاحظات</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-tbody">
+                            <!-- Items will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="total-section">
+                    <h3>المجموع الكلي: <span id="contract-total">0</span> ريال</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clients Management Page -->
+        <div id="clients-page" class="page">
+            <div class="page-header">
+                <h1><i class="fas fa-users"></i> إدارة العملاء</h1>
+                <button class="btn btn-primary" onclick="showAddClientForm()">
+                    <i class="fas fa-plus"></i>
+                    إضافة عميل جديد
+                </button>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid" id="clients-stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-clients">0</div>
+                    <div class="stat-label">إجمالي العملاء</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="active-agreements">0</div>
+                    <div class="stat-label">الاتفاقيات النشطة</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="completed-agreements">0</div>
+                    <div class="stat-label">الاتفاقيات المكتملة</div>
+                </div>
+            </div>
+
+            <!-- Clients Table -->
+            <div class="table-container">
+                <input type="text" class="table-search" id="clients-search" placeholder="البحث في العملاء..." onkeyup="searchClients()">
+                <table class="contracts-table" id="clients-table">
+                    <thead>
+                        <tr>
+                            <th>اسم العميل</th>
+                            <th>رقم الجوال</th>
+                            <th>الهوية الوطنية</th>
+                            <th>تاريخ التسجيل</th>
+                            <th>عدد الاتفاقيات</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clients-tbody">
+                        <!-- Clients will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Agreements Management Page -->
+        <div id="agreements-page" class="page">
+            <div class="page-header">
+                <h1><i class="fas fa-handshake"></i> اتفاقيات العمل</h1>
+                <button class="btn btn-primary" onclick="showAddAgreementForm()">
+                    <i class="fas fa-plus"></i>
+                    إضافة اتفاقية جديدة
+                </button>
+            </div>
+
+            <!-- Agreements Table -->
+            <div class="table-container">
+                <input type="text" class="table-search" id="agreements-search" placeholder="البحث في الاتفاقيات..." onkeyup="searchAgreements()">
+                <table class="contracts-table" id="agreements-table">
+                    <thead>
+                        <tr>
+                            <th>رقم الاتفاقية</th>
+                            <th>اسم العميل</th>
+                            <th>نوع العمل</th>
+                            <th>تاريخ البداية</th>
+                            <th>تاريخ النهاية</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="agreements-tbody">
+                        <!-- Agreements will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Agreement Details Page -->
+        <div id="agreement-details-page" class="page">
+            <div class="page-header">
+                <button class="btn btn-secondary" onclick="showPage('agreements')">
+                    <i class="fas fa-arrow-right"></i>
+                    العودة للاتفاقيات
+                </button>
+                <h1 id="agreement-details-title">تفاصيل الاتفاقية</h1>
+                <div class="header-actions">
+                    <button class="btn btn-info" onclick="printAgreement()">
+                        <i class="fas fa-print"></i>
+                        طباعة
+                    </button>
+                    <button class="btn btn-warning" onclick="editAgreement()">
+                        <i class="fas fa-edit"></i>
+                        تعديل
+                    </button>
+                </div>
+            </div>
+
+            <!-- Agreement Content -->
+            <div class="agreement-content" id="agreement-content">
+                <!-- Agreement details will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Templates Page -->
+        <div id="templates-page" class="page">
+            <div class="page-header">
+                <h1><i class="fas fa-file-alt"></i> إدارة النماذج</h1>
+                <button class="btn btn-primary" onclick="showAddTemplateForm()">
+                    <i class="fas fa-plus"></i>
+                    إضافة نموذج جديد
+                </button>
+            </div>
+
+            <div class="templates-grid" id="templates-grid">
+                <!-- Templates will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Image Editor Page -->
+        <div id="image-editor-page" class="page">
+            <div class="page-header">
+                <h1><i class="fas fa-image"></i> محرر الصور</h1>
+            </div>
+
+            <div class="image-editor-container">
+                <div class="upload-area" id="upload-area">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>اسحب الصورة هنا أو انقر للاختيار</p>
+                    <input type="file" id="image-input" accept="image/*" style="display: none;">
+                </div>
+
+                <div class="editor-workspace" id="editor-workspace" style="display: none;">
+                    <div class="editor-tools">
+                        <div class="tool-group">
+                            <label>النص:</label>
+                            <input type="text" id="text-input" placeholder="أدخل النص">
+                        </div>
+                        <div class="tool-group">
+                            <label>حجم الخط:</label>
+                            <input type="range" id="font-size" min="12" max="72" value="24">
+                            <span id="font-size-value">24px</span>
+                        </div>
+                        <div class="tool-group">
+                            <label>لون النص:</label>
+                            <input type="color" id="text-color" value="#000000">
+                        </div>
+                        <div class="tool-group">
+                            <label>نوع الخط:</label>
+                            <select id="font-family">
+                                <option value="Cairo">Cairo</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Courier New">Courier New</option>
+                            </select>
+                        </div>
+                        <div class="tool-group">
+                            <button class="btn btn-primary" onclick="addTextToImage()">
+                                <i class="fas fa-plus"></i>
+                                إضافة النص
+                            </button>
+                        </div>
+                        
+                        <!-- Text Elements List -->
+                        <div class="tool-group">
+                            <h4>النصوص المضافة:</h4>
+                            <div id="text-elements-list" class="text-elements-list">
+                                <!-- Text elements will be listed here -->
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="tool-group">
+                            <button class="btn btn-info" onclick="loadImageTemplate()">
+                                <i class="fas fa-layer-group"></i>
+                                تطبيق قالب
+                            </button>
+                        </div>
+                        <div class="tool-group">
+                            <button class="btn btn-warning" onclick="saveAsTemplate()">
+                                <i class="fas fa-save"></i>
+                                حفظ كقالب
+                            </button>
+                        </div>
+                        <div class="tool-group">
+                            <button class="btn btn-success" onclick="printImage()">
+                                <i class="fas fa-print"></i>
+                                طباعة
+                            </button>
+                        </div>
+                        <div class="tool-group">
+                            <button class="btn btn-success" onclick="saveImage()">
+                                <i class="fas fa-download"></i>
+                                حفظ الصورة
+                            </button>
+                        </div>
+                        <div class="tool-group">
+                            <button class="btn btn-secondary" onclick="clearCanvas()">
+                                <i class="fas fa-trash"></i>
+                                مسح الكل
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="canvas-container">
+                        <canvas id="image-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Image Templates Page -->
+        <div id="image-templates-page" class="page">
+            <div class="page-header">
+                <h1><i class="fas fa-layer-group"></i> إدارة قوالب الصور</h1>
+                <button class="btn btn-primary" onclick="showAddImageTemplateForm()">
+                    <i class="fas fa-plus"></i>
+                    إضافة قالب جديد
+                </button>
+            </div>
+
+            <div class="templates-grid" id="image-templates-grid">
+                <!-- Image templates will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <!-- Add/Edit Contract Modal -->
+    <div id="contract-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="contract-modal-title">إضافة عقد جديد</h2>
+                <span class="close" onclick="closeModal('contract-modal')">&times;</span>
+            </div>
+            <form id="contract-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>رقم العقد *</label>
+                        <input type="text" id="contract-number" required>
+                    </div>
+                    <div class="form-group">
+                        <label>اسم العميل *</label>
+                        <input type="text" id="client-name" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>نوع العقد *</label>
+                        <select id="contract-type" required>
+                            <option value="">اختر نوع العقد</option>
+                            <option value="بناء">بناء</option>
+                            <option value="تشطيب">تشطيب</option>
+                            <option value="صيانة">صيانة</option>
+                            <option value="هدم">هدم</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>حالة العقد</label>
+                        <select id="contract-status">
+                            <option value="نشط">نشط</option>
+                            <option value="مكتمل">مكتمل</option>
+                            <option value="معلق">معلق</option>
+                            <option value="ملغي">ملغي</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>تاريخ البداية *</label>
+                        <input type="date" id="start-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>تاريخ النهاية *</label>
+                        <input type="date" id="end-date" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>رقم الهاتف *</label>
+                        <input type="tel" id="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label>البريد الإلكتروني</label>
+                        <input type="email" id="email">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>العنوان *</label>
+                    <textarea id="address" required rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>وصف العقد</label>
+                    <textarea id="description" rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>استخدام نموذج:</label>
+                    <select id="template-select">
+                        <option value="">اختر نموذج (اختياري)</option>
+                    </select>
+                    <button type="button" class="btn btn-secondary" onclick="applyTemplate()">
+                        تطبيق النموذج
+                    </button>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('contract-modal')">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Item Modal -->
+    <div id="item-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="item-modal-title">إضافة بند جديد</h2>
+                <span class="close" onclick="closeModal('item-modal')">&times;</span>
+            </div>
+            <form id="item-form">
+                <div class="form-group">
+                    <label>وصف البند *</label>
+                    <textarea id="item-description" required rows="3" placeholder="أدخل وصف البند"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الكمية *</label>
+                        <input type="number" id="item-quantity" required min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>الوحدة *</label>
+                        <select id="item-unit" required>
+                            <option value="">اختر الوحدة</option>
+                            <option value="متر">متر</option>
+                            <option value="متر مربع">متر مربع</option>
+                            <option value="متر مكعب">متر مكعب</option>
+                            <option value="طن">طن</option>
+                            <option value="كيلوجرام">كيلوجرام</option>
+                            <option value="قطعة">قطعة</option>
+                            <option value="مقطوعية">مقطوعية</option>
+                            <option value="يوم">يوم</option>
+                            <option value="ساعة">ساعة</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>السعر للوحدة الواحدة *</label>
+                    <input type="number" id="item-price" required min="0" step="0.01" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>ملاحظات</label>
+                    <textarea id="item-notes" rows="3" placeholder="ملاحظات إضافية (اختياري)"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('item-modal')">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Template Modal -->
+    <div id="template-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="template-modal-title">إضافة نموذج جديد</h2>
+                <span class="close" onclick="closeModal('template-modal')">&times;</span>
+            </div>
+            <form id="template-form">
+                <div class="form-group">
+                    <label>اسم النموذج *</label>
+                    <input type="text" id="template-name" required placeholder="أدخل اسم النموذج">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>فئة النموذج *</label>
+                        <select id="template-category" required>
+                            <option value="">اختر الفئة</option>
+                            <option value="بناء">بناء</option>
+                            <option value="تشطيب">تشطيب</option>
+                            <option value="صيانة">صيانة</option>
+                            <option value="هدم">هدم</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>وصف النموذج *</label>
+                    <textarea id="template-description" required rows="3" placeholder="أدخل وصف النموذج"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('template-modal')">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ النموذج</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Image Template Modal -->
+    <div id="image-template-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="image-template-modal-title">إضافة قالب صورة جديد</h2>
+                <span class="close" onclick="closeModal('image-template-modal')">&times;</span>
+            </div>
+            <form id="image-template-form">
+                <div class="form-group">
+                    <label>اسم القالب *</label>
+                    <input type="text" id="image-template-name" required placeholder="أدخل اسم القالب">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>فئة القالب *</label>
+                        <select id="image-template-category" required>
+                            <option value="">اختر الفئة</option>
+                            <option value="شهادات">شهادات</option>
+                            <option value="إعلانات">إعلانات</option>
+                            <option value="بطاقات">بطاقات</option>
+                            <option value="مستندات">مستندات</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>وصف القالب</label>
+                    <textarea id="image-template-description" rows="3" placeholder="أدخل وصف القالب"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('image-template-modal')">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ القالب</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Client Modal -->
+    <div id="client-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="client-modal-title">إضافة عميل جديد</h2>
+                <span class="close" onclick="closeModal('client-modal')">&times;</span>
+            </div>
+            <form id="client-form">
+                <div class="form-group">
+                    <label>اسم العميل *</label>
+                    <input type="text" id="client-name" required placeholder="أدخل اسم العميل">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>رقم الجوال *</label>
+                        <input type="tel" id="client-phone" required placeholder="05xxxxxxxx">
+                    </div>
+                    <div class="form-group">
+                        <label>الهوية الوطنية *</label>
+                        <input type="text" id="client-national-id" required placeholder="xxxxxxxxxxxxxx">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>البريد الإلكتروني</label>
+                        <input type="email" id="client-email" placeholder="example@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>المدينة</label>
+                        <input type="text" id="client-city" placeholder="الرياض">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>العنوان التفصيلي</label>
+                    <textarea id="client-address" rows="3" placeholder="العنوان التفصيلي للعميل"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>ملاحظات</label>
+                    <textarea id="client-notes" rows="3" placeholder="ملاحظات إضافية"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('client-modal')">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Agreement Modal -->
+    <div id="agreement-modal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 id="agreement-modal-title">إضافة اتفاقية جديدة</h2>
+                <span class="close" onclick="closeModal('agreement-modal')">&times;</span>
+            </div>
+            <form id="agreement-form">
+                <div class="form-section">
+                    <h3>معلومات الاتفاقية</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>رقم الاتفاقية *</label>
+                            <input type="text" id="agreement-number" required placeholder="AGR-2024-001">
+                        </div>
+                        <div class="form-group">
+                            <label>اسم العميل *</label>
+                            <select id="agreement-client" required>
+                                <option value="">اختر العميل</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>نوع العمل *</label>
+                            <select id="agreement-type" required>
+                                <option value="">اختر نوع العمل</option>
+                                <option value="بناء">بناء</option>
+                                <option value="تشطيب">تشطيب</option>
+                                <option value="صيانة">صيانة</option>
+                                <option value="هدم">هدم</option>
+                                <option value="تطوير">تطوير</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>الحالة</label>
+                            <select id="agreement-status">
+                                <option value="نشط">نشط</option>
+                                <option value="معلق">معلق</option>
+                                <option value="مكتمل">مكتمل</option>
+                                <option value="ملغي">ملغي</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>تاريخ البداية *</label>
+                            <input type="date" id="agreement-start-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>تاريخ النهاية *</label>
+                            <input type="date" id="agreement-end-date" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>مواصفات البناء</h3>
+                    <div class="form-group">
+                        <label>نوع البناء</label>
+                        <select id="building-type">
+                            <option value="">اختر نوع البناء</option>
+                            <option value="سكني">سكني</option>
+                            <option value="تجاري">تجاري</option>
+                            <option value="صناعي">صناعي</option>
+                            <option value="حكومي">حكومي</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>مساحة الأرض (م²)</label>
+                            <input type="number" id="land-area" placeholder="500">
+                        </div>
+                        <div class="form-group">
+                            <label>مساحة البناء (م²)</label>
+                            <input type="number" id="building-area" placeholder="300">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>عدد الطوابق</label>
+                        <input type="number" id="floors-count" placeholder="2">
+                    </div>
+                    <div class="form-group">
+                        <label>مواصفات البناء التفصيلية</label>
+                        <textarea id="building-specs" rows="4" placeholder="وصف تفصيلي لمواصفات البناء..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>التشطيبات</h3>
+                    <div class="form-group">
+                        <label>نوع التشطيب</label>
+                        <select id="finishing-type">
+                            <option value="">اختر نوع التشطيب</option>
+                            <option value="عادي">عادي</option>
+                            <option value="فاخر">فاخر</option>
+                            <option value="سوبر لوكس">سوبر لوكس</option>
+                            <option value="مخصص">مخصص</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>مواصفات التشطيبات</label>
+                        <textarea id="finishing-specs" rows="4" placeholder="وصف تفصيلي للتشطيبات المطلوبة..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>الشروط والأحكام</h3>
+                    <div class="form-group">
+                        <label>الشروط العامة</label>
+                        <textarea id="general-terms" rows="4" placeholder="الشروط العامة للاتفاقية..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>الشروط المالية</label>
+                        <textarea id="financial-terms" rows="4" placeholder="الشروط المالية والدفع..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>الشروط الفنية</label>
+                        <textarea id="technical-terms" rows="4" placeholder="الشروط الفنية والمواصفات..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>ملاحظات إضافية</h3>
+                    <div class="form-group">
+                        <label>ملاحظات</label>
+                        <textarea id="agreement-notes" rows="4" placeholder="ملاحظات إضافية..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('agreement-modal')">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ الاتفاقية</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
